@@ -30,12 +30,12 @@ public class GridWalking {
 	long memoryNumOfWaysForPosition[][];
 	// stores for dimension i the number of path with length j, 1<=j<=M in
 	// [i][j]
-	long memoryNumOfPathForDimensionNumOfSteps[][];
+	long memoryNumOfWaysForDimensionNumOfSteps[][];
 	static long modulo = 1000000007;
 	// needed for the calculations in step 2 and 3. stores in [i][j] the
 	// numofcombination when we have to make M-i steps in the dimensions
 	// i+1,...,N
-	static long memoryNumOfCombination[][];
+	static long memoryNumOfWays[][];
 
 	static byte[] startPosition;
 
@@ -57,7 +57,7 @@ public class GridWalking {
 	private long solve() {
 
 		calcNumOfWaysForEachDimension();
-		memoryNumOfCombination = new long[N][M + 1];
+		memoryNumOfWays = new long[N][M + 1];
 		long result = calcNumOfWays(M, 0);
 
 		return result;
@@ -69,19 +69,19 @@ public class GridWalking {
 	 */
 	private void calcNumOfWaysForEachDimension() {
 
-		memoryNumOfPathForDimensionNumOfSteps = new long[N][M];
+		memoryNumOfWaysForDimensionNumOfSteps = new long[N][M];
 		for (int dimension = 0; dimension < N; dimension++) {
 			for (int numOfSteps = 1; numOfSteps <= M; numOfSteps++) {
 				memoryNumOfWaysForPosition = new long[border[dimension]][numOfSteps];
-				long result = solveForCurrentPos(startPosition[dimension], (short) numOfSteps, dimension);
-				memoryNumOfPathForDimensionNumOfSteps[dimension][numOfSteps - 1] = result;
+				long result = numOfWaysForOneDimensional(startPosition[dimension], (short) numOfSteps, dimension);
+				memoryNumOfWaysForDimensionNumOfSteps[dimension][numOfSteps - 1] = result;
 			}
 		}
 	}
 
 	private long calcNumOfWays(short numberOfOfElementsForSubset, int dimension) {
-		// TODO dimension==N needed?
-		if (numberOfOfElementsForSubset == 0 || dimension == N) {
+
+		if (numberOfOfElementsForSubset == 0) {
 			return 1;
 		}
 
@@ -91,66 +91,88 @@ public class GridWalking {
 		}
 
 		long numOfWays = 0;
-		long bio = 1;
-		for (short i = numberOfOfElementsForSubset; i >= minNumOfStepForDimension; i--) {
-			bio = updateBio(numberOfOfElementsForSubset, bio, i);
+		// i.e. a let (1,4,2) denote the num of steps we make in each iteration.
+		// Then we have to calculate how many combinations of ways exist that do
+		// 1 step in dimension 0, 4 in 1 and 2 in 2. Note: If we add to a way of
+		// length M x_i steps in dimension i, we have to multiply our
+		// combination
+		// by C(M,x_i)
+		long numOfCombinations = 1;
 
-			long waysForElement  = waysForElement(i, dimension, bio);
-			long waysForNextSubset = 0;
-			
-			if (memoryNumOfCombination[dimension][numberOfOfElementsForSubset - i] != 0) {
-				waysForNextSubset = memoryNumOfCombination[dimension][numberOfOfElementsForSubset - i];
+		for (short numOfStepsForThisDimension = numberOfOfElementsForSubset; numOfStepsForThisDimension >= minNumOfStepForDimension; numOfStepsForThisDimension--) {
+			numOfCombinations = updateNumOfCombinations(numberOfOfElementsForSubset, numOfCombinations,
+					numOfStepsForThisDimension);
 
+			// calculate how many ways exists if we only move in dimension
+			// dimension...N-1
+			long numOfWaysThisDimensionToN = numOfWaysForDimension(numOfStepsForThisDimension, dimension,
+					numOfCombinations);
+			long numOfWaysForNextDimensions = 0;
+
+			if (memoryNumOfWays[dimension][numberOfOfElementsForSubset - numOfStepsForThisDimension] != 0) {
+				numOfWaysForNextDimensions = memoryNumOfWays[dimension][numberOfOfElementsForSubset
+						- numOfStepsForThisDimension];
 			} else {
-				waysForNextSubset = calcNumOfWays((short) (numberOfOfElementsForSubset - i), dimension + 1) % modulo;
-				memoryNumOfCombination[dimension][numberOfOfElementsForSubset - i] = waysForNextSubset;
+				numOfWaysForNextDimensions = calcNumOfWays(
+						(short) (numberOfOfElementsForSubset - numOfStepsForThisDimension), dimension + 1) % modulo;
+				memoryNumOfWays[dimension][numberOfOfElementsForSubset - numOfStepsForThisDimension] = numOfWaysForNextDimensions;
 			}
-			waysForElement = (waysForElement * waysForNextSubset) % modulo;
-			numOfWays = (numOfWays + waysForElement) % modulo;
+
+			numOfWaysThisDimensionToN = (numOfWaysThisDimensionToN * numOfWaysForNextDimensions) % modulo;
+			numOfWays = (numOfWays + numOfWaysThisDimensionToN) % modulo;
 		}
 		return numOfWays;
 	}
-	private long waysForElement(int i,int dimension,long bio){
-		long numOfPathForEl = 1;
-		if (i != 0) {
-			numOfPathForEl = memoryNumOfPathForDimensionNumOfSteps[dimension][i - 1];
+
+	private long numOfWaysForDimension(int lengthOfWay, int dimension, long mult) {
+		long numOfWaysForDimension = 1;
+		if (lengthOfWay != 0) {
+			numOfWaysForDimension = memoryNumOfWaysForDimensionNumOfSteps[dimension][lengthOfWay - 1];
 		}
-		return (numOfPathForEl * bio) % modulo;
+		return (numOfWaysForDimension * mult) % modulo;
 	}
 
-	private long updateBio(short numberOfOfElementsForSubset, long bio, short i) {
-		if (i != numberOfOfElementsForSubset) {
+	private long updateNumOfCombinations(short numberOfOfElementsForSubset, long mult, short numOfSteps) {
+		if (numOfSteps != numberOfOfElementsForSubset) {
 
-			bio = moduloDivision((bio * (i + 1)) % modulo, numberOfOfElementsForSubset - i, modulo);
+			mult = moduloDivision((mult * (numOfSteps + 1)) % modulo, numberOfOfElementsForSubset - numOfSteps, modulo);
 		} else {
-			bio = 1;
+			mult = 1;
 		}
-		return bio;
+		return mult;
 	}
 
-	private long solveForCurrentPos(byte currentPosition, short numOfSteps, int dimension) {
-		if (numOfSteps == 0) {
+	/**
+	 * Calculates the number of ways if we have only one dimension where we can make steps. 
+	 * 
+	 * @param position
+	 * @param lengthOfWay
+	 * @param dimension
+	 * @return
+	 */
+	private long numOfWaysForOneDimensional(byte position, short lengthOfWay, int dimension) {
+		if (lengthOfWay == 0) {
 			return 1;
 		}
 		long numOfWays = 0;
-		if (currentPosition + 1 <= border[dimension]) {
-			if (memoryNumOfWaysForPosition[currentPosition + 1 - 1][numOfSteps - 1] == 0) {
-				long a = solveForCurrentPos((byte) (currentPosition + 1), (short) (numOfSteps - 1), dimension);
+		if (position + 1 <= border[dimension]) {
+			if (memoryNumOfWaysForPosition[position + 1 - 1][lengthOfWay - 1] == 0) {
+				long a = numOfWaysForOneDimensional((byte) (position + 1), (short) (lengthOfWay - 1), dimension);
 				numOfWays = (numOfWays + a) % modulo;
-				memoryNumOfWaysForPosition[currentPosition + 1 - 1][numOfSteps - 1] = a;
+				memoryNumOfWaysForPosition[position + 1 - 1][lengthOfWay - 1] = a;
 			} else {
-				numOfWays = (numOfWays + memoryNumOfWaysForPosition[currentPosition + 1 - 1][numOfSteps - 1]) % modulo;
+				numOfWays = (numOfWays + memoryNumOfWaysForPosition[position + 1 - 1][lengthOfWay - 1]) % modulo;
 			}
 		}
 
-		if (currentPosition - 1 >= 1) {
+		if (position - 1 >= 1) {
 
-			if (memoryNumOfWaysForPosition[currentPosition - 1 - 1][numOfSteps - 1] == 0) {
-				long a = solveForCurrentPos((byte) (currentPosition - 1), (short) (numOfSteps - 1), dimension);
+			if (memoryNumOfWaysForPosition[position - 1 - 1][lengthOfWay - 1] == 0) {
+				long a = numOfWaysForOneDimensional((byte) (position - 1), (short) (lengthOfWay - 1), dimension);
 				numOfWays = (numOfWays + a) % modulo;
-				memoryNumOfWaysForPosition[currentPosition - 1 - 1][numOfSteps - 1] = a;
+				memoryNumOfWaysForPosition[position - 1 - 1][lengthOfWay - 1] = a;
 			} else {
-				numOfWays = (numOfWays + memoryNumOfWaysForPosition[currentPosition - 1 - 1][numOfSteps - 1]) % modulo;
+				numOfWays = (numOfWays + memoryNumOfWaysForPosition[position - 1 - 1][lengthOfWay - 1]) % modulo;
 			}
 		}
 
