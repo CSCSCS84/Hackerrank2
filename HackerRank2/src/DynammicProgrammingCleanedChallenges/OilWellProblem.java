@@ -1,4 +1,5 @@
 package DynammicProgrammingCleanedChallenges;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.LinkedList;
@@ -92,15 +93,12 @@ public class OilWellProblem {
 		} else {
 			for (OilWell oilWell : possibleOilWellsForNextSetUp) {
 
-				int costSetUpNewOilWells = costSetUpOilWell(border,
-						oilWell.getVerticalPos(), oilWell.getHorizontalPos());
+				int costSetUpNewOilWells = costSetUpOilWell(border, oilWell.getVerticalPos(),
+						oilWell.getHorizontalPos());
 
-				byte[] updatedBorder = updateBorder(border,
-						oilWell.getVerticalPos(), oilWell.getHorizontalPos());
-				costSetUpNewOilWells += costSetUpAllNewOilWellsInBorder(
-						updatedBorder, border, oilWell.getVerticalPos(),
-						oilWell.getHorizontalPos(),
-						oilWell.getPositionToCurrentBorder());
+				byte[] updatedBorder = updateBorder(border, oilWell.getVerticalPos(), oilWell.getHorizontalPos());
+				costSetUpNewOilWells += costSetUpAllNewOilWellsInBorder(updatedBorder, border,
+						oilWell.getVerticalPos(), oilWell.getHorizontalPos(), oilWell.getPositionToCurrentBorder());
 
 				int memoryCost = memoryCostForBorder(updatedBorder);
 				int a = 0;
@@ -136,27 +134,24 @@ public class OilWellProblem {
 	 * @param positionOfOilWellToCurrentBorder
 	 * @return
 	 */
-	private int costSetUpAllNewOilWellsInBorder(byte[] outerBorder,
-			byte[] innerBorder, byte oilWellVerticalPos,
+	private int costSetUpAllNewOilWellsInBorder(byte[] outerBorder, byte[] innerBorder, byte oilWellVerticalPos,
 			byte oilWellHorizontalPos, byte positionOfOilWellToCurrentBorder) {
 
 		int costSetUpNewOilWells = 0;
 		if (positionOfOilWellToCurrentBorder <= 3) {
-			costSetUpNewOilWells = costSetUpOilWellsNonDiagonal(outerBorder,
-					oilWellVerticalPos, oilWellHorizontalPos,
+			costSetUpNewOilWells = costSetUpOilWellsNonDiagonal(outerBorder, oilWellVerticalPos, oilWellHorizontalPos,
 					positionOfOilWellToCurrentBorder);
 		} else {
-			costSetUpNewOilWells = costSetUpOilWellsDiagonal(outerBorder,
-					innerBorder, oilWellVerticalPos, oilWellHorizontalPos,
-					positionOfOilWellToCurrentBorder);
+			costSetUpNewOilWells = costSetUpOilWellsDiagonal(outerBorder, innerBorder, oilWellVerticalPos,
+					oilWellHorizontalPos, positionOfOilWellToCurrentBorder);
 		}
 
 		return costSetUpNewOilWells;
 
 	}
 
-	private int addWellsInRange(byte a,byte b, byte c, byte d,byte cordI, byte cordJ,byte []border) {
-		int sumCostForSetUpOilWells=0;
+	private int addWellsInRange(byte a, byte b, byte c, byte d, byte cordI, byte cordJ, byte[] border) {
+		int sumCostForSetUpOilWells = 0;
 		for (byte i = a; i <= b; i++) {
 			for (byte j = c; j <= d; j++) {
 				if (grid[i][j]) {
@@ -170,23 +165,23 @@ public class OilWellProblem {
 		return sumCostForSetUpOilWells;
 	}
 
-	private int costSetUpOilWellsDiagonal(byte[] border, byte[] oldBorder,
-			byte cordI, byte cordJ, byte posWellAdded) {
+	private int costSetUpOilWellsDiagonal(byte[] border, byte[] oldBorder, byte cordI, byte cordJ, byte posWellAdded) {
 		short sumCostForSetUpOilWells = 0;
 		// left above
 		if (posWellAdded == 4) {
 			// left
-			sumCostForSetUpOilWells+=addWellsInRange(border[0], border[1], border[2],(byte) (border[3]-1), cordI, cordJ, border);
-//			for (byte i = border[0]; i <= border[1]; i++) {
-//				for (byte j = border[2]; j < oldBorder[2]; j++) {
-//					if (grid[i][j]) {
-//						if (!(cordI == i && cordJ == j)) {
-//							byte cost = costSetUpOilWell(border, i, j);
-//							sumCostForSetUpOilWells += cost;
-//						}
-//					}
-//				}
-//			}
+			sumCostForSetUpOilWells += addWellsInRange(border[0], border[1], border[2], (byte) (border[3] - 1), cordI,
+					cordJ, border);
+			// for (byte i = border[0]; i <= border[1]; i++) {
+			// for (byte j = border[2]; j < oldBorder[2]; j++) {
+			// if (grid[i][j]) {
+			// if (!(cordI == i && cordJ == j)) {
+			// byte cost = costSetUpOilWell(border, i, j);
+			// sumCostForSetUpOilWells += cost;
+			// }
+			// }
+			// }
+			// }
 			// above
 			for (byte i = border[0]; i < oldBorder[0]; i++) {
 				for (byte j = oldBorder[2]; j <= border[3]; j++) {
@@ -284,8 +279,7 @@ public class OilWellProblem {
 		return sumCostForSetUpOilWells;
 	}
 
-	public int costSetUpOilWellsNonDiagonal(byte[] border, byte cordI,
-			byte cordJ, byte posWellAdded) {
+	public int costSetUpOilWellsNonDiagonal(byte[] border, byte cordI, byte cordJ, byte posWellAdded) {
 		// above
 		short sumOfCost = 0;
 		if (posWellAdded == 0) {
@@ -378,10 +372,8 @@ public class OilWellProblem {
 	// ca. 2.6 s
 	private byte costSetUpOilWell(byte[] border, byte cordI, byte cordJ) {
 
-		byte maxHor = max(absolute((byte) (cordI - (border[0]))),
-				absolute((byte) (cordI - (border[1]))));
-		byte maxVer = max(absolute((byte) (cordJ - (border[2]))),
-				absolute((byte) (cordJ - (border[3]))));
+		byte maxHor = max(absolute((byte) (cordI - (border[0]))), absolute((byte) (cordI - (border[1]))));
+		byte maxVer = max(absolute((byte) (cordJ - (border[2]))), absolute((byte) (cordJ - (border[3]))));
 
 		return max(maxHor, maxVer);
 	}
@@ -494,15 +486,13 @@ public class OilWellProblem {
 				}
 			}
 		}
-		searchDiagonal2(border, wellsNotInSol, upperBorder, lowerBorder,
-				leftBorder, rightBorder);
+		searchDiagonal2(border, wellsNotInSol, upperBorder, lowerBorder, leftBorder, rightBorder);
 		return wellsNotInSol;
 	}
 
 	// 0.06 für Test11
-	public void searchDiagonal2(byte[] border,
-			LinkedList<OilWell> wellsNotInSol, byte upperBorder,
-			byte lowerBorder, byte leftBorder, byte rightBorder) {
+	public void searchDiagonal2(byte[] border, LinkedList<OilWell> wellsNotInSol, byte upperBorder, byte lowerBorder,
+			byte leftBorder, byte rightBorder) {
 		byte startPos1 = (byte) (border[0] - 1);
 		byte startPos2 = (byte) (border[2] - 1);
 
@@ -663,8 +653,7 @@ public class OilWellProblem {
 		// 6 right above, 7 right below
 		byte positionToCurrentBorder;
 
-		public OilWell(byte verticalPos, byte horizontalPos,
-				byte positionToCurrentBorder) {
+		public OilWell(byte verticalPos, byte horizontalPos, byte positionToCurrentBorder) {
 			super();
 			this.verticalPos = verticalPos;
 			this.horizontalPos = horizontalPos;
@@ -698,8 +687,7 @@ public class OilWellProblem {
 		byte leftBorder;
 		byte rightBorder;
 
-		public Border(byte upperBorder, byte lowerBorder, byte leftBorder,
-				byte rightBorder) {
+		public Border(byte upperBorder, byte lowerBorder, byte leftBorder, byte rightBorder) {
 			super();
 			this.upperBorder = upperBorder;
 			this.lowerBorder = lowerBorder;
