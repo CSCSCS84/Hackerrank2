@@ -21,7 +21,10 @@ public class RoundingRules {
 	public BigDecimalRoundingRule rateRoundingRule = new BigDecimalRoundingRule(2, new MathContext(128,
 			RoundingMode.HALF_DOWN));
 
-	public BigDecimalRoundingRule zinsRoundingRule = new BigDecimalRoundingRule(2, new MathContext(128,
+	public BigDecimalRoundingRule zinsbetragRoundingRule = new BigDecimalRoundingRule(2, new MathContext(128,
+			RoundingMode.HALF_DOWN));
+	
+	public BigDecimalRoundingRule genericRoundingRule = new BigDecimalRoundingRule(128, new MathContext(128,
 			RoundingMode.HALF_DOWN));
 
 	public BigDecimalRoundingRule restschuldRoundingRule = new BigDecimalRoundingRule(2, new MathContext(128,

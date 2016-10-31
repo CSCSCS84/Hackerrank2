@@ -3,8 +3,8 @@ package cs.tilgungsplan.tilgungsplancalculator;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import cs.tilgungsplan.outputformat.FinancialBetragFormater;
 import cs.tilgungsplan.outputformat.DateFormater;
+import cs.tilgungsplan.outputformat.FinancialBetragFormater;
 import cs.tilgungsplan.outputformat.OutputFormatTilgungsplaneintrag;
 
 /**
@@ -79,9 +79,12 @@ public class Tilgungsplaneintrag {
 	 */
 	public String toString(OutputFormatTilgungsplaneintrag outputFormat) {
 		DateFormater dateFormater = outputFormat.getDateFormater();
+		String currency = outputFormat.getCurrency();
 		FinancialBetragFormater financialBetragFormater = outputFormat.getFinancialBetragFormater();
-		return dateFormater.formatDate(date) + " " + financialBetragFormater.formatBetrag(restschuld) + " " + financialBetragFormater.formatBetrag(zinsbetrag) + " "
-				+ financialBetragFormater.formatBetrag(tilgungsbetrag) + " " + financialBetragFormater.formatBetrag(rate);
+		return dateFormater.formatDate(date) + " " + financialBetragFormater.formatBetrag(restschuld) + " " + currency
+				+ "  " + financialBetragFormater.formatBetrag(zinsbetrag) + " " + currency + "  "
+				+ financialBetragFormater.formatBetrag(tilgungsbetrag) + " " + currency + "  "
+				+ financialBetragFormater.formatBetrag(rate) + " " + currency;
 	}
 
 }

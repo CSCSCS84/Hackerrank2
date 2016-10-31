@@ -11,11 +11,14 @@ public class OutputFormatTilgungsplaneintrag {
 
 	DateFormater dateFormater;
 	FinancialBetragFormater financialBetragFormater;
+	String currency;
 
-	public OutputFormatTilgungsplaneintrag(DateFormater dateFormater, FinancialBetragFormater betragFormater) {
+	public OutputFormatTilgungsplaneintrag(DateFormater dateFormater, FinancialBetragFormater financialBetragFormater,
+			String currency) {
 		super();
 		this.dateFormater = dateFormater;
-		this.financialBetragFormater = betragFormater;
+		this.financialBetragFormater = financialBetragFormater;
+		this.currency = currency;
 	}
 
 	public DateFormater getDateFormater() {
@@ -32,6 +35,14 @@ public class OutputFormatTilgungsplaneintrag {
 
 	public void setFinancialBetragFormater(FinancialBetragFormater financialBetragFormater) {
 		this.financialBetragFormater = financialBetragFormater;
+	}
+
+	public String getCurrency() {
+		return currency;
+	}
+
+	public void setCurrency(String currency) {
+		this.currency = currency;
 	}
 
 }

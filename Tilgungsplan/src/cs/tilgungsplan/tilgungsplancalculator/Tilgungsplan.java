@@ -35,8 +35,8 @@ public class Tilgungsplan {
 	 */
 	public String toString(OutputFormatTilgungsplaneintrag outputFormat) {
 		StringBuffer tilgungsplan = new StringBuffer();
-		for (Tilgungsplaneintrag te : tilgungsplaneintraege) {
-			tilgungsplan.append(te.toString(outputFormat) + "\n");
+		for (Tilgungsplaneintrag tilgungsplaneintrag : tilgungsplaneintraege) {
+			tilgungsplan.append(tilgungsplaneintrag.toString(outputFormat) + "\n");
 		}
 		return tilgungsplan.toString();
 	}

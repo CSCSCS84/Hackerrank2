@@ -1,94 +1,110 @@
 package cs.tilgungsplan.tilgungsplancalculator;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.sql.Timestamp;
 
 import cs.tilgungsplan.calendar.CalenderUtils;
-import cs.tilgungsplan.outputformat.GermanDateFormater;
-import cs.tilgungsplan.outputformat.GermanFinancialBetragFormater;
-import cs.tilgungsplan.outputformat.OutputFormatTilgungsplaneintrag;
 import cs.tilgungsplan.zinsen.ZinsCalculator;
 
+/**
+ * Calculates a Tilgungsplan for given Tilgungsplangroessen. Note: There are no unit tests for this class yet. 
+ * @author Christoph
+ *
+ */
 public class TilgungsplanCalculator {
-	private static int scaleForInput = 128;
-	static MathContext mathContextForInput = new MathContext(scaleForInput, RoundingMode.HALF_DOWN);
+	
 
-	public static void main(String[] args) {
-
-		TilgungsplanCalculator tc = new TilgungsplanCalculator();
-		Tilgungsplangroessen tilgungsplangroessen = new Tilgungsplangroessen(new BigDecimal("-100000",
-				mathContextForInput), new BigDecimal("0.0212", mathContextForInput), new BigDecimal("0.02",
-				mathContextForInput), (short) 10, Tilgungsrhythmus.ONEMONTH, new RoundingRules());
-		Tilgungsplan tp = tc.calcTilgungsplan(tilgungsplangroessen);
-		OutputFormatTilgungsplaneintrag outputFormater = new OutputFormatTilgungsplaneintrag(new GermanDateFormater(),
-				new GermanFinancialBetragFormater());
-		System.out.println(tp.toString(outputFormater));
-
-	}
-
-	private Tilgungsplan calcTilgungsplan(Tilgungsplangroessen tilgungsplangroessen) {
+	public Tilgungsplan calculateTilgungsplan(Tilgungsplangroessen tilgungsplangroessen) {
 
 		Tilgungsplan tilgungsplan = new Tilgungsplan();
-		TilgungsplanWithFixedRateGroessenCalculator fixedTilgungsplangroessenCalculator = new TilgungsplanWithFixedRateGroessenCalculator();
-		TilgungsplanWithFixedRateGroessen tfg = fixedTilgungsplangroessenCalculator
+		TilgungsplangroessenHelperCalculator fixedTilgungsplangroessenCalculator = new TilgungsplangroessenHelperCalculator();
+		TilgungsplangroessenHelper tilgungsplangroessenHelper = fixedTilgungsplangroessenCalculator
 				.calculateFixedTilgungsplangroessen(tilgungsplangroessen);
 
-		Tilgungsplaneintrag te = calcFirstTilgungsplaneintrag(tilgungsplangroessen);
-		tilgungsplan.addTilgungsplaneintrag(te);
+		Tilgungsplaneintrag tilgungsplaneintrag = calculateFirstTilgungsplaneintrag(tilgungsplangroessen);
+		tilgungsplan.addTilgungsplaneintrag(tilgungsplaneintrag);
 
-		for (int i = 1; i <= tfg.getLaufzeit(); i++) {
-			te = calcTilgungsplanEintrag(te, tfg);
-			tilgungsplan.addTilgungsplaneintrag(te);
+		for (int i = 1; i <= tilgungsplangroessenHelper.getLaufzeit(); i++) {
+			tilgungsplaneintrag = calculateTilgungsplanEintrag(tilgungsplaneintrag, tilgungsplangroessenHelper);
+			tilgungsplan.addTilgungsplaneintrag(tilgungsplaneintrag);
 		}
 
 		return tilgungsplan;
 	}
 
-	private Tilgungsplaneintrag calcFirstTilgungsplaneintrag(Tilgungsplangroessen tilgungsplangroessen) {
+	private Tilgungsplaneintrag calculateFirstTilgungsplaneintrag(Tilgungsplangroessen tilgungsplangroessen) {
 
-		Tilgungsplaneintrag tp = new Tilgungsplaneintrag(calcNextDate(System.currentTimeMillis(),
+		Tilgungsplaneintrag tilgungsplaneintrag = new Tilgungsplaneintrag(calculateNextDate(System.currentTimeMillis(),
 				tilgungsplangroessen.getTilgungsrhythmus()), tilgungsplangroessen.getDarlehensbetrag(), new BigDecimal(
 				"0"), tilgungsplangroessen.getDarlehensbetrag(), tilgungsplangroessen.getDarlehensbetrag());
-		return tp;
+		return tilgungsplaneintrag;
 	}
 
-	private Tilgungsplaneintrag calcTilgungsplanEintrag(Tilgungsplaneintrag te, TilgungsplanWithFixedRateGroessen tfg) {
+	private Tilgungsplaneintrag calculateTilgungsplanEintrag(Tilgungsplaneintrag lastTilgungsplaneintrag,
+			TilgungsplangroessenHelper tilgungsplangroessenHelper) {
 
-		ZinsCalculator zinssatzCalculator = new ZinsCalculator(tfg.getRoundingRules().zinsRoundingRule);
-		BigDecimal zinsBetrag = zinssatzCalculator.calculateZinsBetrag(te.getRestschuld(), tfg.getZinsen());
-		BigDecimal tilgungsBetrag = tfg.getRate().subtract(zinsBetrag);
+		BigDecimal zinsbetrag = calculateZinsbetrag(lastTilgungsplaneintrag, tilgungsplangroessenHelper);
+		BigDecimal tilgungsbetrag = calculateTilgungsbetrag(lastTilgungsplaneintrag, tilgungsplangroessenHelper,
+				zinsbetrag);
+		BigDecimal restSchuld = calculateRestschuld(lastTilgungsplaneintrag, tilgungsplangroessenHelper, tilgungsbetrag);
+		Timestamp nextDate = calculateNextDate(lastTilgungsplaneintrag.getDate().getTime(),
+				tilgungsplangroessenHelper.getTilgungsrhythmus());
 
-		BigDecimal restSchuld = te.getRestschuld().setScale(tfg.getRoundingRules().restschuldRoundingRule.getScale(),
-				tfg.getRoundingRules().restschuldRoundingRule.getRoundingMode());
-		restSchuld = restSchuld.add(tilgungsBetrag, tfg.getRoundingRules().restschuldRoundingRule.getMathContext());
-		tilgungsBetrag = tilgungsBetrag.setScale(tfg.getRoundingRules().tilgungsbetragRoundingRule.getScale(),
-				tfg.getRoundingRules().tilgungsbetragRoundingRule.getScale());
-		Timestamp nextDate = calcNextDate(te.getDate().getTime(), tfg.getTilgungsrhythmus());
-		Tilgungsplaneintrag tp = new Tilgungsplaneintrag(nextDate, restSchuld, zinsBetrag, tilgungsBetrag,
-				tfg.getRate());
-		return tp;
+		BigDecimal rate=zinsbetrag.add(tilgungsbetrag);
+		Tilgungsplaneintrag tilgungsplaneintrag = new Tilgungsplaneintrag(nextDate, restSchuld, zinsbetrag,
+				tilgungsbetrag, rate);
+		return tilgungsplaneintrag;
 	}
 
-	private Timestamp calcNextDate(long time, Tilgungsrhythmus tilgungsrhythmus) {
+	private BigDecimal calculateZinsbetrag(Tilgungsplaneintrag lastTilgungsplaneintrag,
+			TilgungsplangroessenHelper tilgungsplangroessenHelper) {
+		ZinsCalculator zinssatzCalculator = new ZinsCalculator(
+				tilgungsplangroessenHelper.getRoundingRules().zinsbetragRoundingRule);
+		BigDecimal zinsbetrag = zinssatzCalculator.calculateZinsBetrag(lastTilgungsplaneintrag.getRestschuld(),
+				tilgungsplangroessenHelper.getSollzinsPerPeriod());
+		return zinsbetrag;
+	}
+
+	private BigDecimal calculateTilgungsbetrag(Tilgungsplaneintrag lastTilgungsplaneintrag,
+			TilgungsplangroessenHelper tilgungsplangroessenHelper, BigDecimal zinsbetrag) {
+		BigDecimal tilgungsbetrag = tilgungsplangroessenHelper.getRate().subtract(zinsbetrag);
+		if (tilgungsbetrag.compareTo(lastTilgungsplaneintrag.getRestschuld().negate()) >= 0) {
+			tilgungsbetrag = lastTilgungsplaneintrag.getRestschuld().negate();
+		}
+		tilgungsbetrag = tilgungsbetrag.setScale(
+				tilgungsplangroessenHelper.getRoundingRules().tilgungsbetragRoundingRule.getScale(),
+				tilgungsplangroessenHelper.getRoundingRules().tilgungsbetragRoundingRule.getScale());
+		return tilgungsbetrag;
+	}
+
+	private BigDecimal calculateRestschuld(Tilgungsplaneintrag lastTilgungsplaneintrag,
+			TilgungsplangroessenHelper tilgungsplangroessenHelper, BigDecimal tilgungsbetrag) {
+		BigDecimal restSchuld = lastTilgungsplaneintrag.getRestschuld().setScale(
+				tilgungsplangroessenHelper.getRoundingRules().restschuldRoundingRule.getScale(),
+				tilgungsplangroessenHelper.getRoundingRules().restschuldRoundingRule.getRoundingMode());
+		restSchuld = restSchuld.add(tilgungsbetrag,
+				tilgungsplangroessenHelper.getRoundingRules().restschuldRoundingRule.getMathContext());
+		return restSchuld;
+	}
+
+	private Timestamp calculateNextDate(long timeInMillis, Tilgungsrhythmus tilgungsrhythmus) {
 		Timestamp date = null;
 		switch (tilgungsrhythmus) {
 
 		case ONEYEAR:
-			date = CalenderUtils.calculateEndOfNextYear(time);
+			date = CalenderUtils.calculateEndOfNextYear(timeInMillis);
 			break;
 
 		case SIXMONTH:
-			date = CalenderUtils.calculateEndOfNextHalfYear(time);
+			date = CalenderUtils.calculateEndOfNextHalfYear(timeInMillis);
 			break;
 
 		case THREEMONTH:
-			date = CalenderUtils.calculateEndOfNextQuartal(time);
+			date = CalenderUtils.calculateEndOfNextQuartal(timeInMillis);
 			break;
 
 		case ONEMONTH:
-			date = CalenderUtils.calculateEndOfNextMonth(time);
+			date = CalenderUtils.calculateEndOfNextMonth(timeInMillis);
 			break;
 		}
 		return date;
