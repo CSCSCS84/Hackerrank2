@@ -2,26 +2,42 @@ package MaximumFlowAlgorithm;
 
 import java.util.LinkedList;
 
-public class GraphEdmondsKarp<U, V> {
+public class GraphEdmondsKarp {
 
 	protected int numOfNodes;
-	protected NodeEdmondsKarp<U, V>[] nodes;
+	protected NodeEdmondsKarp[] nodes;
 
 	public GraphEdmondsKarp(int numOfNodes) {
 		this.nodes = new NodeEdmondsKarp[numOfNodes];
 	}
 
-	public void removeNode(NodeEdmondsKarp<U, V> node) {
-		for (EdgeEdmondKarp<U, V> edge : node.getEdges()) {
+	public void removeNode(NodeEdmondsKarp node) {
+		for (EdgeEdmondKarp edge : node.getEdges()) {
 			int targetNode = edge.getTargetNode();
-			this.removeEdge(new EdgeEdmondKarp<U, V>(targetNode, node.getNameOfNode(), null, null),
-					this.nodes[targetNode]);
+			// TODO why implantation like that?
+			this.removeEdge(new EdgeEdmondKarp(targetNode, node.getNameOfNode(), 0, 0), this.nodes[targetNode]);
 		}
-		node.setEdges(new LinkedList<EdgeEdmondKarp<U, V>>());
+		node.setEdges(new LinkedList<EdgeEdmondKarp>());
 	}
 
-	private void removeEdge(EdgeEdmondKarp<U, V> edge, NodeEdmondsKarp<U, V> node) {
+	private void removeEdge(EdgeEdmondKarp edge, NodeEdmondsKarp node) {
 		node.removeEdge(edge);
+	}
+
+	public int getNumOfNodes() {
+		return numOfNodes;
+	}
+
+	public void setNumOfNodes(int numOfNodes) {
+		this.numOfNodes = numOfNodes;
+	}
+
+	public NodeEdmondsKarp[] getNodes() {
+		return nodes;
+	}
+
+	public void setNodes(NodeEdmondsKarp[] nodes) {
+		this.nodes = nodes;
 	}
 
 }

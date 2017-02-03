@@ -1,24 +1,24 @@
 package MaximumFlowAlgorithm;
 
-public class EdgeEdmondKarp<U, V> {
+public class EdgeEdmondKarp {
 
 	protected int sourceNode;
 	protected int targetNode;
-	protected V weight;
-	protected U weightResidual;
+	protected int weight;
+	protected int weightResidual;
 
-	public EdgeEdmondKarp(int sourceNode, int targetNode, V weight, U weightResidual) {
+	public EdgeEdmondKarp(int sourceNode, int targetNode, int weight, int weightResidual) {
 		this.sourceNode = sourceNode;
 		this.targetNode = targetNode;
 		this.weight = weight;
 		this.weightResidual = weightResidual;
 	}
 
-	public U getWeightResidual() {
+	public int getWeightResidual() {
 		return weightResidual;
 	}
 
-	public void setWeightResidual(U weightResidual) {
+	public void setWeightResidual(int weightResidual) {
 		this.weightResidual = weightResidual;
 	}
 
@@ -38,19 +38,22 @@ public class EdgeEdmondKarp<U, V> {
 		this.targetNode = targetNode;
 	}
 
-	public V getWeight() {
+	public int getWeight() {
 		return weight;
 	}
 
-	public void setWeight(V weight) {
+	public void setWeight(int weight) {
 		this.weight = weight;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((weightResidual == null) ? 0 : weightResidual.hashCode());
+		int result = 1;
+		result = prime * result + sourceNode;
+		result = prime * result + targetNode;
+		result = prime * result + weight;
+		result = prime * result + weightResidual;
 		return result;
 	}
 
@@ -58,15 +61,18 @@ public class EdgeEdmondKarp<U, V> {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (!super.equals(obj))
+		if (obj == null)
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		EdgeEdmondKarp other = (EdgeEdmondKarp) obj;
-		if (weightResidual == null) {
-			if (other.weightResidual != null)
-				return false;
-		} else if (!weightResidual.equals(other.weightResidual))
+		if (sourceNode != other.sourceNode)
+			return false;
+		if (targetNode != other.targetNode)
+			return false;
+		if (weight != other.weight)
+			return false;
+		if (weightResidual != other.weightResidual)
 			return false;
 		return true;
 	}

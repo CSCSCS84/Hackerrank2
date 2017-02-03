@@ -2,24 +2,24 @@ package MaximumFlowAlgorithm;
 
 import java.util.LinkedList;
 
-public class NodeEdmondsKarp<U, V> {
+public class NodeEdmondsKarp {
 	protected int nameOfNode;
-	protected LinkedList<EdgeEdmondKarp<U, V>> edges;
+	protected LinkedList<EdgeEdmondKarp> edges;
 
 	public NodeEdmondsKarp(int nameOfNode) {
 		this.nameOfNode = nameOfNode;
-		edges = new LinkedList<EdgeEdmondKarp<U, V>>();
+		edges = new LinkedList<EdgeEdmondKarp>();
 	}
 
-	public void addEdge(EdgeEdmondKarp<U, V> edge) {
+	public void addEdge(EdgeEdmondKarp edge) {
 		this.edges.add(edge);
 	}
 
-	public LinkedList<EdgeEdmondKarp<U, V>> getEdges() {
+	public LinkedList<EdgeEdmondKarp> getEdges() {
 		return edges;
 	}
 
-	public void setEdges(LinkedList<EdgeEdmondKarp<U, V>> edges) {
+	public void setEdges(LinkedList<EdgeEdmondKarp> edges) {
 		this.edges = edges;
 	}
 
@@ -27,7 +27,7 @@ public class NodeEdmondsKarp<U, V> {
 		return this.nameOfNode;
 	}
 
-	public void removeEdge(EdgeEdmondKarp<U, V> edgeToRemove) {
+	public void removeEdge(EdgeEdmondKarp edgeToRemove) {
 		this.edges.remove(edgeToRemove);
 	}
 }
